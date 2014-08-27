@@ -1,7 +1,7 @@
 <?php
 class securesubmit extends base
 {
-    var $code, $title, $description, $enabled;
+    var $code, $title, $description, $enabled, $auth_code, $transaction_id;
 
     function securesubmit()
     {
@@ -142,11 +142,14 @@ class securesubmit extends base
 						}
 					});
 
+                    $("#btn_submit").hide();
+
 					return false; // stop the form submission
 				});
 
 				function secureSubmitResponseHandler(response) {
 					if ( response.message ) {
+                        $("#btn_submit").show();
 						alert(response.message);
 					} else {
 						var form$ = $("form[name=checkout_confirmation]");
@@ -224,6 +227,9 @@ class securesubmit extends base
                     false,
                     null);
 			}
+
+            $this->transaction_id = $response->transactionId;
+            $this->auth_code = $response->authorizationCode;
 		}
 		catch (Exception $e) {
 			$error = $e->getMessage();
@@ -236,9 +242,15 @@ class securesubmit extends base
 
     function after_process()
     {
-        global $charge, $insert_id,  $db;
+        global $insert_id,  $db;
 
-		// considering writing the $charge data to the order.
+        $comments .= " AUTH: " . $this->auth_code . ". TransID: " . $this->transaction_id;
+
+        $sql = "insert into " . TABLE_ORDERS_STATUS_HISTORY . " (comments, orders_id, orders_status_id, customer_notified, date_added) values (:orderComments, :orderID, :orderStatus, -1, now() )";
+        $sql = $db->bindVars($sql, ':orderComments', 'Credit Card payment. ' . $comments, 'string');
+        $sql = $db->bindVars($sql, ':orderID', $insert_id, 'integer');
+        $sql = $db->bindVars($sql, ':orderStatus', $this->order_status, 'integer');
+        $db->Execute($sql);
 
         return false;
     }
@@ -299,7 +311,7 @@ class securesubmit extends base
             'MODULE_PAYMENT_SECURESUBMIT_CURRENCY',
             'MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY',
             'MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY',
-			'MODULE_PAYMENT_SECURESUBMIT_AUTHCAPTURE'
+            'MODULE_PAYMENT_SECURESUBMIT_AUTHCAPTURE'
         );
     }
 
