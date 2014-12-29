@@ -188,7 +188,7 @@ class securesubmit extends base
         $config->versionNumber = '1512';
         $config->developerId = '002914';
         
-        $chargeService = new HpsChargeService($config);
+        $chargeService = new HpsCreditService($config);
 
         $hpsaddress = new HpsAddress();
         $hpsaddress->address = $order->billing['street_address'];
