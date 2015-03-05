@@ -126,6 +126,8 @@ class securesubmit extends base
         $confirmation['title'] .= '<script type="text/javascript">
             jQuery(document).ready(function($) {
                 $("form[name=checkout_confirmation]").submit(function(event) {
+                    $("#btn_submit").hide();
+                    
                     hps.tokenize({
                         data: {
                             public_key: \'' . $public_key . '\',
@@ -141,8 +143,6 @@ class securesubmit extends base
                             secureSubmitResponseHandler(response);
                         }
                     });
-
-                    $("#btn_submit").hide();
 
                     return false; // stop the form submission
                 });
