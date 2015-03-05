@@ -252,8 +252,10 @@ class securesubmit extends base
         global $insert_id,  $db;
 
         try {
-            $comments .= " AUTH: " . $this->auth_code . ". TransID: " . $this->transaction_id;
-            $comments .= ". AVS Code: " . $this->avs_code . ". Invoice Number: " . $this->invoice_number;
+            $comments .= " AUTH: " . $this->auth_code;
+            $comments .= ". TransID: " . $this->transaction_id;
+            $comments .= ". AVS Code: " . $this->avs_code;
+            $comments .= ". Invoice Number: " . $this->invoice_number;
 
             $sql = "insert into " . TABLE_ORDERS_STATUS_HISTORY . " (comments, orders_id, orders_status_id, customer_notified, date_added) values (:orderComments, :orderID, :orderStatus, -1, now() )";
             $sql = $db->bindVars($sql, ':orderComments', 'Credit Card payment. ' . $comments, 'string');
