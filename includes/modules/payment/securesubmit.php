@@ -1,9 +1,16 @@
 <?php
 class securesubmit extends base
 {
-    var $code, $title, $description, $enabled, $auth_code, $transaction_id, $avs_code, $invoice_number;
+    public $code;
+    public $title;
+    public $description;
+    public $enabled;
+    public $auth_code;
+    public $transaction_id;
+    public $avs_code;
+    public $invoice_number;
 
-    function securesubmit()
+    public function securesubmit()
     {
         global $order,$messageStack;
         $this->code            = 'securesubmit';
@@ -15,7 +22,7 @@ class securesubmit extends base
         $this->form_action_url = '';
 
         if (IS_ADMIN_FLAG === true) {
-            if ( MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY == '' || MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY == ''){
+            if (MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY == '' || MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY == '') {
                  $this->title .= '<strong><span class="alert">One of your SecureSubmit API keys is missing.</span></strong>';
             }
         }
@@ -24,13 +31,12 @@ class securesubmit extends base
             $this->order_status = MODULE_PAYMENT_SECURESUBMIT_ORDER_STATUS_ID;
         }
 
-        if (is_object($order))
-        {
+        if (is_object($order)) {
             $this->update_status();
         }
     }
 
-    function update_status()
+    public function update_status()
     {
         global $order, $db;
         if (($this->enabled == true) && ((int) MODULE_PAYMENT_SECURESUBMIT_ZONE > 0)) {
@@ -55,12 +61,12 @@ class securesubmit extends base
         }
     }
 
-    function javascript_validation()
+    public function javascript_validation()
     {
         return false;
     }
 
-    function selection()
+    public function selection()
     {
         return array(
             'id' => $this->code,
@@ -68,12 +74,12 @@ class securesubmit extends base
         );
     }
 
-    function pre_confirmation_check()
+    public function pre_confirmation_check()
     {
         return false;
     }
 
-    function confirmation()
+    public function confirmation()
     {
         global $order,  $db;
 
@@ -127,7 +133,7 @@ class securesubmit extends base
             jQuery(document).ready(function($) {
                 $("form[name=checkout_confirmation]").submit(function(event) {
                     $("#btn_submit").hide();
-                    
+
                     hps.tokenize({
                         data: {
                             public_key: \'' . $public_key . '\',
@@ -172,22 +178,22 @@ class securesubmit extends base
         return $confirmation;
     }
 
-    function process_button()
+    public function process_button()
     {
         return false;
     }
 
-    function before_process()
+    public function before_process()
     {
         global $_POST,  $order, $sendto, $currency, $charge, $db, $messageStack;
         require_once(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/securesubmit/Hps.php');
         $error = '';
-        
+
         $config = new HpsConfiguration();
         $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
         $config->versionNumber = '1512';
         $config->developerId = '002914';
-        
+
         $chargeService = new HpsCreditService($config);
 
         $hpsaddress = new HpsAddress();
@@ -213,32 +219,30 @@ class securesubmit extends base
         $details->invoiceNumber = $this->invoice_number;
 
         try {
-            if (MODULE_PAYMENT_SECURESUBMIT_AUTHCAPTURE == 'Authorize')
-            {
+            if (MODULE_PAYMENT_SECURESUBMIT_AUTHCAPTURE == 'Authorize') {
                 $response = $chargeService->authorize(
                     round($order->info['total'], 2),
                     MODULE_PAYMENT_SECURESUBMIT_CURRENCY,
                     $hpstoken,
                     $cardHolder,
                     false,
-                    null);
-            }
-            else
-            {
+                    null
+                );
+            } else {
                 $response = $chargeService->charge(
                     round($order->info['total'], 2),
                     MODULE_PAYMENT_SECURESUBMIT_CURRENCY,
                     $hpstoken,
                     $cardHolder,
                     false,
-                    null);
+                    null
+                );
             }
 
             $this->transaction_id = $response->transactionId;
             $this->auth_code = $response->authorizationCode;
             $this->avs_code = $response->avsResultCode;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $error = $e->getMessage();
             $messageStack->add_session('checkout_confirmation', $error . '<!-- [' . $this->code . '] -->', 'error');
             zen_redirect(zen_href_link(FILENAME_CHECKOUT_CONFIRMATION, '', 'SSL', true, false));
@@ -247,7 +251,7 @@ class securesubmit extends base
         return false;
     }
 
-    function after_process()
+    public function after_process()
     {
         global $insert_id,  $db;
 
@@ -274,7 +278,7 @@ class securesubmit extends base
         return false;
     }
 
-    function get_error()
+    public function get_error()
     {
         global $_GET;
         $error = array(
@@ -284,7 +288,7 @@ class securesubmit extends base
         return $error;
     }
 
-    function check()
+    public function check()
     {
         global $db;
 
@@ -296,7 +300,7 @@ class securesubmit extends base
         return $this->_check;
     }
 
-    function install()
+    public function install()
     {
         global $db, $messageStack;
 
@@ -315,12 +319,14 @@ class securesubmit extends base
         $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Secret key', 'MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY', '', 'Secret key  - available in your SecureSubmit Account Tab.', '6', '64', now())");
         $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Public key', 'MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY', '', 'Public key  - available in your SecureSubmit Account Tab.', '6', '66', now())");
     }
-    function remove()
+
+    public function remove()
     {
         global $db;
         $db->Execute("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
     }
-    function keys()
+
+    public function keys()
     {
         return array(
             'MODULE_PAYMENT_SECURESUBMIT_STATUS',
@@ -335,7 +341,7 @@ class securesubmit extends base
     }
 
     // for now, we only accept usd, but let's leave our options option with some validations.
-    function format_raw($number, $currency_code = '', $currency_value = '')
+    public function format_raw($number, $currency_code = '', $currency_value = '')
     {
         global $currencies, $currency;
 
@@ -366,4 +372,3 @@ function table_exists($tablename, $database = false)
         return false;
     }
 }
-?>
