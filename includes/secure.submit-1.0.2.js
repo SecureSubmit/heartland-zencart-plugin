@@ -121,12 +121,17 @@
         } else {
             var form$ = $("form[name=checkout_confirmation]");
             var token = response.token_value;
+            console.log(token);
+            console.log($('input[name=securesubmit_token]'));
 
-            form$.append("<input type='hidden' name='securesubmit_token' value='" + token + "'/>");
+            if ($('input[name=securesubmit_token]'))
+                $('input[name=securesubmit_token]').val(token_value);
+            else
+                form$.append("<input type='hidden' name='securesubmit_token' value='" + token + "'/>");
             form$.attr('action', 'index.php?main_page=checkout_process');
 
-            $("#tdb5").hide();
-            form$.get(0).submit();
+            //$("#tdb5").hide();
+            //form$.get(0).submit();
         }
     }
 }(document, Heartland));
