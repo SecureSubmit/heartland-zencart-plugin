@@ -1,219 +1,132 @@
-﻿/*global $, jQuery*/
-var hps = (function ($) {
-    "use strict";
-
-    var Validator, OptionValidator, FieldValidator, HPS;
-
-    Validator = function (fail, message) {
-        this.fail = fail;
-        this.message = message;
-    };
-
-    Validator.prototype.validate = function () {
-        if (this.fail) {
-            HPS.error(this.message);
-        }
-    };
-
-    OptionValidator = function (field, options) {
-        this.message = field + " is missing";
-        this.fail = HPS.empty(options[field]);
-    };
-
-    FieldValidator = function (field, type) {
-        this.field = field;
-        this.type = type;
-        this.element = (typeof field === 'object') ? field : $("#" + field);
-        this.message = this.element.attr("id") + " is invalid";
-        this.fail = HPS.empty(this.element) || !this.element.is(this.type);
-    };
-
-    OptionValidator.prototype = new Validator();
-    OptionValidator.prototype.constructor = OptionValidator;
-    FieldValidator.prototype = new Validator();
-    FieldValidator.prototype.constructor = FieldValidator;
-
-    HPS = {
-
-        Tag: "SecureSubmit",
-
-        Urls: {
-            UAT: "https://posgateway.uat.secureexchange.net/Hps.Exchange.PosGateway.Hpf.v1/api/token",
-            CERT: "https://cert.api2.heartlandportico.com/Hps.Exchange.PosGateway.Hpf.v1/api/token",
-            PROD: "https://api2.heartlandportico.com/SecureSubmit.v1/api/token"
-        },
-
-        getData: function (element) {
-            return element.data(HPS.Tag);
-        },
-
-        setData: function (element, data) {
-            element.data(HPS.Tag, data);
-        },
-
-        hasData: function (element) {
-            return typeof HPS.getData(element) === 'object';
-        },
-				
-		tokenize: function (options) {			
-			var gateway_url, params, env;
-
-            // add additional service parameters
-            params = $.param({
-                "api_key": options.data.public_key,
-                "object": "token",
-                "token_type": "supt",
-                "_method": "post",
-                "card[number]": $.trim(options.data.number),
-                "card[cvc]": $.trim(options.data.cvc),
-                "card[exp_month]": $.trim(options.data.exp_month),
-                "card[exp_year]": $.trim(options.data.exp_year)
-            });
-
-            env = options.data.public_key.split("_")[1];
-
-            if (env === "uat") {
-                gateway_url = HPS.Urls.UAT;
-            } else if (env === "cert") {
-                gateway_url = HPS.Urls.CERT;
-            } else {
-                gateway_url = HPS.Urls.PROD;
+(function (document, Heartland) {
+    // Create a new `HPS` object with the necessary configuration
+    console.log(public_key);
+    var hps = new Heartland.HPS({
+        publicKey: public_key,
+        type: 'iframe',
+        // Configure the iframe fields to tell the library where
+        // the iframe should be inserted into the DOM and some
+        // basic options
+        fields: {
+            cardNumber: {
+                target: 'iframesCardNumber',
+                placeholder: '•••• •••• •••• ••••'
+            },
+            cardExpiration: {
+                target: 'iframesCardExpiration',
+                placeholder: 'MM / YYYY'
+            },
+            cardCvv: {
+                target: 'iframesCardCvv',
+                placeholder: 'CVV'
             }
-
-            // request token
-            $.ajax({
-                cache: false,
-                url: gateway_url,
-                data: params,
-                dataType: "jsonp",
-                success: function (response) {
-
-                    // Request failed, handle error
-                    if (typeof response.error === 'object') {
-                        // call error handler if provided and valid
-                        if (typeof options.error === 'function') {
-                            options.error(response.error);
-                        }
-                        // handle exception
-                        HPS.error(response.error.message);
-                    }
-					else if(typeof options.success === 'function') {
-						options.success(response);
-					}
-                }
-            });
-
-		},
-
-        empty: function (val) {
-            return val === undefined || val.length === 0;
         },
-
-        error: function (message) {
-            $.error([HPS.Tag, ": ", message].join(""));
-        },
-
-        configureElement: function (options) {
-
-            // set plugin data
-            HPS.setData($(this), {
-                public_key: options.public_key,
-                success: options.success,
-                error: options.error,
-                validators: [
-                    new OptionValidator("public_key", options),
-                    new FieldValidator("card_number", "input"),
-                    new FieldValidator("card_cvc", "input"),
-                    new FieldValidator("exp_month", "input"),
-                    new FieldValidator("exp_year", "input")
-                ]
-            });
-
-            // add event handler for form submission
-            $(this).submit(function (e) {
-
-                var theForm, data, i;
-
-                // stop form from submitting
-                e.preventDefault();
-
-                // remove name attributes from sensitive fields
-                $("#card_number").removeAttr("name");
-                $("#card_cvc").removeAttr("name");
-                $("#exp_month").removeAttr("name");
-                $("#exp_year").removeAttr("name");
-
-                theForm = $(this);
-
-                // get data from storage
-                data = HPS.getData(theForm);
-
-                // validate data plugin options
-                for (i = 0; i < data.validators.length; i += 1) {
-                    data.validators[i].validate();
-                }
-
-                // validate form - jQuery validate plugin
-                if (typeof theForm.validate === 'function') {
-                    theForm.validate();
-                    // validation failed
-                    if (!theForm.valid()) {
-                        return;
-                    }
-                }
-
-				HPS.tokenize({
-					data: {
-						public_key: data.public_key,
-		                number: $.trim($("#card_number").val()),
-		                cvc: $.trim($("#card_cvc").val()),
-		                exp_month: $.trim($("#exp_month").val()),
-		                exp_year: $.trim($("#exp_year").val())
-					},
-					success: function(response){
-
-		                // create field and append to form
-		                $("<input>").attr({
-		                    type: "hidden",
-		                    id: "token_value",
-		                    name: "token_value",
-		                    value: response.token_value
-		                }).appendTo(theForm);
-
-		                // success handler provided
-		                if (typeof data.success === 'function') {
-		                    // call the handler with payload
-		                    if (data.success(response) === false) {		                        
-		                        return; // stop processing
-		                    }
-		                }
-		                
-		                theForm.unbind('submit'); // unbind event handler
-		                theForm.submit(); // submit the form
-					},
-					error: function(response){
-	                    if (typeof data.error === 'function') {
-	                        data.error(response);
-	                    }
-					}
-				});
-
-            });
-        }
-    };
-
-    $.fn.SecureSubmit = function (options) {
-
-        return this.each(function () {
-            if (!$(this).is("form") || typeof options !== 'object' || HPS.hasData($(this))) {
-
-                return;
+        // Collection of CSS to inject into the iframes.
+        // These properties can match the site's styles
+        // to create a seamless experience.
+        style: {
+            'input[type=text],input[type=tel]': {
+                'box-sizing': 'border-box',
+                'display': 'block',
+                'width': '100%',
+                'height': '34px',
+                'padding': '6px 12px',
+                'font-size': '14px',
+                'line-height': '1.42857143',
+                'color': '#555',
+                'background-color': '#fff',
+                'background-image': 'none',
+                'border': '1px solid #ccc',
+                'border-radius': '4px',
+                '-webkit-box-shadow': 'inset 0 1px 1px rgba(0,0,0,.075)',
+                'box-shadow': 'inset 0 1px 1px rgba(0,0,0,.075)',
+                '-webkit-transition': 'border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s',
+                '-o-transition': 'border-color ease-in-out .15s,box-shadow ease-in-out .15s',
+                'transition': 'border-color ease-in-out .15s,box-shadow ease-in-out .15s'
+            },
+            'input[type=text]:focus,input[type=tel]:focus': {
+                'border-color': '#66afe9',
+                'outline': '0',
+                '-webkit-box-shadow': 'inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)',
+                'box-shadow': 'inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)'
+            },
+            'input[type=submit]': {
+                'box-sizing': 'border-box',
+                'display': 'inline-block',
+                'padding': '6px 12px',
+                'margin-bottom': '0',
+                'font-size': '14px',
+                'font-weight': '400',
+                'line-height': '1.42857143',
+                'text-align': 'center',
+                'white-space': 'nowrap',
+                'vertical-align': 'middle',
+                '-ms-touch-action': 'manipulation',
+                'touch-action': 'manipulation',
+                'cursor': 'pointer',
+                '-webkit-user-select': 'none',
+                '-moz-user-select': 'none',
+                '-ms-user-select': 'none',
+                'user-select': 'none',
+                'background-image': 'none',
+                'border': '1px solid transparent',
+                'border-radius': '4px',
+                'color': '#fff',
+                'background-color': '#337ab7',
+                'border-color': '#2e6da4'
+            },
+            'input[type=submit]:hover': {
+                'color': '#fff',
+                'background-color': '#286090',
+                'border-color': '#204d74'
+            },
+            'input[type=submit]:focus, input[type=submit].focus': {
+                'color': '#fff',
+                'background-color': '#286090',
+                'border-color': '#122b40',
+                'text-decoration': 'none',
+                'outline': '5px auto -webkit-focus-ring-color',
+                'outline-offset': '-2px'
             }
+        },
+        // Callback when a token is received from the service
+        onTokenSuccess: function (resp) {
+            secureSubmitResponseHandler(resp);
+        },
+        // Callback when an error is received from the service
+        onTokenError: function (resp) {
+            secureSubmitResponseHandler(resp);
+        }
+    });
 
-            HPS.configureElement.apply(this, [options]);
-        });
-    };
-	
-	return HPS;
+    // Attach a handler to interrupt the form submission
+    Heartland.Events.addHandler(document.getElementById('iframes'), 'submit', function (e) {
+        // Prevent the form from continuing to the `action` address
+        e.preventDefault();
+        // Tell the iframes to tokenize the data
+        hps.Messages.post(
+                {
+                    accumulateData: true,
+                    action: 'tokenize',
+                    message: public_key
+                },
+                'cardNumber'
+                );
+    });
 
-}(jQuery));
+    function secureSubmitResponseHandler(response) {
+        if (response.message) {
+            $("#btn_submit").show();
+            alert(response.message);
+        } else {
+            var form$ = $("form[name=checkout_confirmation]");
+            var token = response.token_value;
+
+            form$.append("<input type='hidden' name='securesubmit_token' value='" + token + "'/>");
+            form$.attr('action', 'index.php?main_page=checkout_process');
+
+            $("#tdb5").hide();
+            form$.get(0).submit();
+        }
+    }
+}(document, Heartland));

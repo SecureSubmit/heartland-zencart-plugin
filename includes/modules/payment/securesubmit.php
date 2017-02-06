@@ -110,7 +110,7 @@ class securesubmit extends base
         $confirmation = array();
         $confirmation['fields'] = array();
 
-        $confirmation['fields'][] = array(
+        /*$confirmation['fields'][] = array(
             'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_OWNER . '</span>' . zen_draw_input_field('', $order->billing['firstname'] . ' ' . $order->billing['lastname'], 'class="card-name card_hide"'),
             'field' => ''
         );
@@ -126,55 +126,51 @@ class securesubmit extends base
             'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_CVC . '</span>'.zen_draw_input_field('', '', 'size="5" maxlength="4" class="card_cvc card_hide"'),
             'field' => ''
         );
+         
+         */
 
+        $confirmation['title'] .= '<!-- make iframes styled like other form -->
+<style type="text/css">
+	#iframes iframe{
+		float:left;
+		width:100%;
+	}
+	.iframeholder:after,
+	.iframeholder::after{
+		content:\'\';
+		display:block;
+		width:100%;
+		height:0px;
+		clear:both;
+		position:relative;
+	}
+</style>
+
+
+<!-- The Payment Form -->
+<form id="iframes" action="" method="GET" name="checkout_confirmation">
+	<div class="form-group">
+		<label for="iframesCardNumber">Card Number:</label>
+		<div class="iframeholder" id="iframesCardNumber"></div>
+	</div>
+	<div class="form-group">
+		<label for="iframesCardExpiration">Card Expiration:</label>
+		<div class="iframeholder" id="iframesCardExpiration"></div>
+	</div>
+	<div class="form-group">
+		<label for="iframesCardCvv">Card CVV:</label>
+		<div class="iframeholder" id="iframesCardCvv"></div>
+	</div>
+
+	<input type="submit" name="btn_submit" class="btn btn-primary" value="Submit" />
+
+</form>
+';
         $confirmation['title'] .= '<script type="text/javascript" src="includes/jquery.js"></script>';
-        $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-1.0.2.js"></script>';
-        $confirmation['title'] .= '<script type="text/javascript">
-            jQuery(document).ready(function($) {
-                $("form[name=checkout_confirmation]").submit(function(event) {
-                    $("#btn_submit").hide();
-
-                    hps.tokenize({
-                        data: {
-                            public_key: \'' . $public_key . '\',
-                            number: $(\'.card_number\').val().replace(/\D/g, \'\'),
-                            cvc: $(\'.card_cvc\').val(),
-                            exp_month: $(\'.card_expiry_month\').val(),
-                            exp_year: $(\'.card-expiry-year\').val()
-                        },
-                        success: function(response) {
-                            secureSubmitResponseHandler(response);
-                        },
-                        error: function(response) {
-                            secureSubmitResponseHandler(response);
-                        }
-                    });
-
-                    return false; // stop the form submission
-                });
-
-                function secureSubmitResponseHandler(response) {
-                    if ( response.message ) {
-                        $("#btn_submit").show();
-                        alert(response.message);
-                    } else {
-                        var form$ = $("form[name=checkout_confirmation]");
-                        var token = response.token_value;
-
-                        form$.append("<input type=\'hidden\' name=\'securesubmit_token\' value=\'" + token + "\'/>");
-                        form$.attr(\'action\', \'index.php?main_page=checkout_process\');
-
-                        $(\'.card_number\').val(\'\');
-                        $(\'.card_cvc\').val(\'\');
-                        $(\'.card_expiry_month\').val(\'\');
-                        $(\'.card-expiry-year\').val(\'\');
-
-                        $("#tdb5").hide();
-                        form$.get(0).submit();
-                    }
-                }
-            });
-            </script>';
+        $confirmation['title'] .= '<script type="text/javascript" src="https://api2.heartlandportico.com/SecureSubmit.v1/token/2.1/securesubmit.js"></script>';
+        $confirmation['title'] .= '<script type="text/javascript">var public_key = \'' . $public_key . '\'</script>';
+        $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-1.0.2.js"></script>';        
+                
         return $confirmation;
     }
 
@@ -188,6 +184,7 @@ class securesubmit extends base
         global $_POST,  $order, $sendto, $currency, $charge, $db, $messageStack;
         require_once(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/securesubmit/Hps.php');
         $error = '';
+               
 
         $config = new HpsConfiguration();
         $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
