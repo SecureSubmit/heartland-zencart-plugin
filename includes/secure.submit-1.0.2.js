@@ -1,9 +1,22 @@
-(function (document, Heartland) {
-    // Create a new `HPS` object with the necessary configuration
-    console.log(public_key);
+jQuery(document).ready(function ($) {
+    $("form[name=checkout_confirmation]").submit(function (e) {
+        $("#btn_submit").hide();        
+        hps.Messages.post(
+                {
+                    accumulateData: true,
+                    action: 'tokenize',
+                    message: public_key
+                },
+                'cardNumber'
+                );
+        return false;
+    });
+
+    // Create a new `HPS` object with the necessary configuration    
     var hps = new Heartland.HPS({
         publicKey: public_key,
         type: 'iframe',
+        //buttonTarget: 'btn_submit',
         // Configure the iframe fields to tell the library where
         // the iframe should be inserted into the DOM and some
         // basic options
@@ -98,7 +111,6 @@
             secureSubmitResponseHandler(resp);
         }
     });
-
     // Attach a handler to interrupt the form submission
     Heartland.Events.addHandler(document.getElementById('iframes'), 'submit', function (e) {
         // Prevent the form from continuing to the `action` address
@@ -122,16 +134,14 @@
             var form$ = $("form[name=checkout_confirmation]");
             var token = response.token_value;
             console.log(token);
-            console.log($('input[name=securesubmit_token]'));
-
-            if ($('input[name=securesubmit_token]'))
-                $('input[name=securesubmit_token]').val(token_value);
+            console.log($('#securesubmit_token_field'));
+            if ($('#securesubmit_token_field').length > 0)
+                $('#securesubmit_token_field').val(token_value);
             else
-                form$.append("<input type='hidden' name='securesubmit_token' value='" + token + "'/>");
+                form$.append("<input type='hidden' id='securesubmit_token_field' name='securesubmit_token' value='" + token + "'/>");
             form$.attr('action', 'index.php?main_page=checkout_process');
-
-            //$("#tdb5").hide();
-            //form$.get(0).submit();
+            form$.get(0).submit();
         }
     }
-}(document, Heartland));
+
+});
