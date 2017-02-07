@@ -110,21 +110,7 @@ jQuery(document).ready(function ($) {
         onTokenError: function (resp) {
             secureSubmitResponseHandler(resp);
         }
-    });
-    // Attach a handler to interrupt the form submission
-    Heartland.Events.addHandler(document.getElementById('iframes'), 'submit', function (e) {
-        // Prevent the form from continuing to the `action` address
-        e.preventDefault();
-        // Tell the iframes to tokenize the data
-        hps.Messages.post(
-                {
-                    accumulateData: true,
-                    action: 'tokenize',
-                    message: public_key
-                },
-                'cardNumber'
-                );
-    });
+    });    
 
     function secureSubmitResponseHandler(response) {
         if (response.message) {

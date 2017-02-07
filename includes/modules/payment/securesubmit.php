@@ -107,24 +107,6 @@ class securesubmit extends base {
         $confirmation = array();
         $confirmation['fields'] = array();
 
-         /*$confirmation['fields'][] = array(
-          'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_OWNER . '</span>' . zen_draw_input_field('', $order->billing['firstname'] . ' ' . $order->billing['lastname'], 'class="card-name card_hide"'),
-          'field' => ''
-          );
-          $confirmation['fields'][] = array(
-          'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_NUMBER . '</span>'. zen_draw_input_field('', '', 'style="display:inline-block; padding-right:10px" class="card_number card_hide"'),
-          'field' => ''
-          );
-          $confirmation['fields'][] = array(
-          'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_EXPIRES . '</span>'.zen_draw_pull_down_menu('', $expires_month, '', 'class="card_expiry_month card_hide"') . '&nbsp;' . zen_draw_pull_down_menu('', $expires_year, '', 'class="card-expiry-year  card_hide"'),
-          'field' => ''
-          );
-          $confirmation['fields'][] = array(
-          'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_CVC . '</span>'.zen_draw_input_field('', '', 'size="5" maxlength="4" class="card_cvc card_hide"'),
-          'field' => ''
-          );
-
-         */
         $confirmation['title'] .= 
              '<!-- make iframes styled like other form -->
                     <style type="text/css">
@@ -144,7 +126,7 @@ class securesubmit extends base {
                     </style>
 
                     <!-- The Payment Form -->
-                    <form id="iframes" action="" method="GET" name="checkout_confirmation">
+                    <form id="iframes" action="" method="GET" name="card_details">
                         <div class="form-group">
                                 <label for="iframesCardNumber">Card Number:</label>
                                 <div class="iframeholder" id="iframesCardNumber"></div>
@@ -156,10 +138,7 @@ class securesubmit extends base {
                         <div class="form-group">
                                 <label for="iframesCardCvv">Card CVV:</label>
                                 <div class="iframeholder" id="iframesCardCvv"></div>
-                        </div>
-                        <div id="ssiframe"></div>
-
-                        <input type="submit" class="btn btn-primary" value="Submit" />                  
+                        </div>                                        
                     </form>';
         
         $confirmation['title'] .= '<script type="text/javascript" src="includes/jquery.js"></script>';
@@ -175,10 +154,10 @@ class securesubmit extends base {
     }
 
     public function before_process() {
-        global $_POST, $order, $sendto, $currency, $charge, $db, $messageStack;
+        global $_POST, $order, $sendto, $currency, $charge, $db, $messageStack; 
         require_once(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/securesubmit/Hps.php');
         $error = '';
-
+        
         $config = new HpsConfiguration();
         $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
         $config->versionNumber = '1512';
@@ -200,10 +179,11 @@ class securesubmit extends base {
         $cardHolder->address = $hpsaddress;
 
         $hpstoken = new HpsTokenData();
-        $hpstoken->tokenValue = $_POST['securesubmit_token'];
+        $hpstoken->tokenValue = $_POST['securesubmit_token']; 
 
         $last_order = $db->Execute("select orders_id from " . TABLE_ORDERS . " order by orders_id desc limit 1");
         $this->invoice_number = ($last_order->fields['orders_id']) + 1;
+        
 
         $details = new HpsTransactionDetails();
         $details->invoiceNumber = $this->invoice_number;
