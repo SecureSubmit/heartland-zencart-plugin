@@ -15,8 +15,7 @@ jQuery(document).ready(function ($) {
     // Create a new `HPS` object with the necessary configuration    
     var hps = new Heartland.HPS({
         publicKey: public_key,
-        type: 'iframe',
-        //buttonTarget: 'btn_submit',
+        type: 'iframe',        
         // Configure the iframe fields to tell the library where
         // the iframe should be inserted into the DOM and some
         // basic options
@@ -103,28 +102,28 @@ jQuery(document).ready(function ($) {
             }
         },
         // Callback when a token is received from the service
-        onTokenSuccess: function (resp) {
+        onTokenSuccess: function (resp) {            
             secureSubmitResponseHandler(resp);
         },
         // Callback when an error is received from the service
-        onTokenError: function (resp) {
+        onTokenError: function (resp) {            
             secureSubmitResponseHandler(resp);
         }
     });    
 
     function secureSubmitResponseHandler(response) {
-        if (response.message) {
+        if (response.error.message) {
             $("#btn_submit").show();
-            alert(response.message);
+            alert(response.error.message);
         } else {
             var form$ = $("form[name=checkout_confirmation]");
             var token = response.token_value;
-            console.log(token);
-            console.log($('#securesubmit_token_field'));
+            
             if ($('#securesubmit_token_field').length > 0)
                 $('#securesubmit_token_field').val(token_value);
             else
                 form$.append("<input type='hidden' id='securesubmit_token_field' name='securesubmit_token' value='" + token + "'/>");
+            
             form$.attr('action', 'index.php?main_page=checkout_process');
             form$.get(0).submit();
         }
