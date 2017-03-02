@@ -1,4 +1,4 @@
-$('head').append('<link rel="stylesheet" href="includes/modules/payment/securesubmit/assets/css/styles.css" type="text/css" />');
+//$('head').append('<link rel="stylesheet" href='+siteHref+'"includes/modules/payment/securesubmit/assets/css/styles.css" type="text/css" />');
 
 jQuery(document).ready(function ($) {
     $("form[name=checkout_confirmation]").submit(function (e) {
@@ -14,9 +14,13 @@ jQuery(document).ready(function ($) {
         return false;
     });
   
-    <!-- The Integration Code -->
-  
+        //The Integration Code  
        // Create a new `HPS` object with the necessary configuration
+       //get current url
+       var siteHref = window.location.href;
+       siteHref = siteHref.substring(0, siteHref.lastIndexOf("/") + 1);
+       
+
        var hps = new Heartland.HPS({
          publicKey: 'pkapi_cert_jKc1FtuyAydZhZfbB3',
          type:      'iframe',
@@ -101,56 +105,56 @@ jQuery(document).ready(function ($) {
                'letter-spacing':'3px'
            },
            '#heartland-field[name=cardCvv]' : {
-               'background':'transparent url('+location.href+ '/includes/templates/template_default/images/cvv1.png) no-repeat right',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/cvv1.png) no-repeat right',
                'background-size' :'63px 40px'
            },
            '#heartland-field[name=cardNumber]' : {
-               'background':'transparent url('+location.href+ 'includes/modules/payment/securesubmit/assets/images/ss-inputcard-blank@2x.png) no-repeat right',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-inputcard-blank@2x.png) no-repeat right',
                'background-size' :'55px 35px'
            },
            'input#heartland-field[name=cardNumber].invalid.card-type-visa' :{
-               'background':'transparent url(/includes/templates/template_default/images/ss-saved-visa@2x.png) no-repeat right',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-visa@2x.png) no-repeat right',
                'background-size' :'83px 88px',
                'background-position-y':'-44px'
            },
            '#heartland-field.valid.card-type-visa' :{
-               'background':'transparent url('+location.href+ '/assets/images/ss-saved-visa@2x.png) no-repeat right top',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-visa@2x.png) no-repeat right top',
                'background-size' :'82px 86px'
            },
            '#heartland-field.invalid.card-type-discover' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-saved-discover@2x.png) no-repeat right bottom',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-discover@2x.png) no-repeat right bottom',
                'background-size' :'85px 85px'
            },
            '#heartland-field.valid.card-type-discover' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-saved-discover@2x.png) no-repeat right top',
+               'background':'transparent url('+siteHref+'"includes/templates/template_default/images/ss-saved-discover@2x.png) no-repeat right top',
                'background-size' :'85px 83px'
            },
            '#heartland-field.invalid.card-type-amex' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-savedcards-amex@2x.png) no-repeat right',
+               'background':'transparent url('+siteHref+'"includes/templates/template_default/images/ss-savedcards-amex@2x.png") no-repeat right',
                'background-size' :'50px 90px',
                'background-position-y':'-44'
            },
            '#heartland-field.valid.card-type-amex' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-savedcards-amex@2x.png) no-repeat right top',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-savedcards-amex@2x.png) no-repeat right top',
                'background-size' :'50px 90px'
            },
            '#heartland-field.invalid.card-type-mastercard' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-saved-mastercard.png) no-repeat right',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-mastercard.png) no-repeat right',
                'background-size' :'85px 81px',
                'background-position-y':'-55px'
            },
            '#heartland-field.valid.card-type-mastercard' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-saved-mastercard.png) no-repeat right',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-mastercard.png) no-repeat right',
                'background-size' :'62px 105px',
                'background-position-y':'-4px'
            },
            '#heartland-field.invalid.card-type-jcb' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-saved-jcb@2x.png) no-repeat right',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-jcb@2x.png) no-repeat right',
                'background-size' :'75px 78px',
                'background-position-y':'-38px'
            },
            '#heartland-field.valid.card-type-jcb' :{
-               'background':'transparent url('+location.href+ 'assets/images/ss-saved-jcb@2x.png) no-repeat right top',
+               'background':'transparent url('+siteHref+'includes/templates/template_default/images/ss-saved-jcb@2x.png) no-repeat right top',
                'background-size' :'75px 78px',
                'background-position-y':'1px'
            },
