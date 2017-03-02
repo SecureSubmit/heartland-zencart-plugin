@@ -116,12 +116,21 @@ class securesubmit extends base {
                             }
                             .iframeholder:after,
                             .iframeholder::after{
-                                    content:\'\';
+                                    content:;
                                     display:block;
                                     width:100%;
                                     height:0px;
                                     clear:both;
                                     position:relative;
+                            }
+                            #iframes label {
+                                    text-transform:uppercase !important;
+                                    font-weight:500;
+                                    font-family:sans-serif !important;
+                                    color:#777777;
+                            }
+                            .iframeholder {
+                              margin-bottom:50px;
                             }
                     </style>
 
