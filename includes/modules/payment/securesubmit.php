@@ -1,6 +1,7 @@
 <?php
-class securesubmit extends base
-{
+
+class securesubmit extends base {
+
     public $code;
     public $title;
     public $description;
@@ -10,20 +11,19 @@ class securesubmit extends base
     public $avs_code;
     public $invoice_number;
 
-    public function securesubmit()
-    {
-        global $order,$messageStack;
-        $this->code            = 'securesubmit';
-        $this->codeVersion     = '1.5.2';
-        $this->title           = MODULE_PAYMENT_SECURESUBMIT_TEXT_TITLE;
-        $this->description     = MODULE_PAYMENT_SECURESUBMIT_TEXT_DESCRIPTION;
-        $this->sort_order      = MODULE_PAYMENT_SECURESUBMIT_SORT_ORDER;
-        $this->enabled         = ((MODULE_PAYMENT_SECURESUBMIT_STATUS == 'True') ? true : false);
+    public function securesubmit() {
+        global $order, $messageStack;
+        $this->code = 'securesubmit';
+        $this->codeVersion = '1.5.2';
+        $this->title = MODULE_PAYMENT_SECURESUBMIT_TEXT_TITLE;
+        $this->description = MODULE_PAYMENT_SECURESUBMIT_TEXT_DESCRIPTION;
+        $this->sort_order = MODULE_PAYMENT_SECURESUBMIT_SORT_ORDER;
+        $this->enabled = ((MODULE_PAYMENT_SECURESUBMIT_STATUS == 'True') ? true : false);
         $this->form_action_url = '';
 
         if (IS_ADMIN_FLAG === true) {
             if (MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY == '' || MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY == '') {
-                 $this->title .= '<strong><span class="alert">One of your SecureSubmit API keys is missing.</span></strong>';
+                $this->title .= '<strong><span class="alert">One of your SecureSubmit API keys is missing.</span></strong>';
             }
         }
 
@@ -36,8 +36,7 @@ class securesubmit extends base
         }
     }
 
-    public function update_status()
-    {
+    public function update_status() {
         global $order, $db;
         if (($this->enabled == true) && ((int) MODULE_PAYMENT_SECURESUBMIT_ZONE > 0)) {
             $check_flag = false;
@@ -61,36 +60,34 @@ class securesubmit extends base
         }
     }
 
-    public function javascript_validation()
-    {
+    public function javascript_validation() {
         return false;
     }
 
-    public function selection()
-    {
+    public function selection() {
         return array(
             'id' => $this->code,
             'module' => $this->title
         );
     }
 
-    public function pre_confirmation_check()
-    {
+    public function pre_confirmation_check() {
         return false;
     }
 
-    public function confirmation()
-    {
-        global $order,  $db;
+    public function confirmation() {
+        global $order, $db;
 
         $public_key = MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY;
         if ($public_key == '') {
-?>
-        <script type="text/javascript">alert('No Public Key found - unable to procede.');</script>
-        <?php
+            ?>
+            <script type="text/javascript">alert('No Public Key found - unable to procede.');</script>
+            <?php
+
         }
-?>
+        ?>
         <?php
+
         for ($i = 1; $i < 13; $i++) {
             $expires_month[] = array(
                 'id' => sprintf('%02d', $i),
@@ -110,85 +107,66 @@ class securesubmit extends base
         $confirmation = array();
         $confirmation['fields'] = array();
 
-        $confirmation['fields'][] = array(
-            'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_OWNER . '</span>' . zen_draw_input_field('', $order->billing['firstname'] . ' ' . $order->billing['lastname'], 'class="card-name card_hide"'),
-            'field' => ''
-        );
-        $confirmation['fields'][] = array(
-            'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_NUMBER . '</span>'. zen_draw_input_field('', '', 'style="display:inline-block; padding-right:10px" class="card_number card_hide"'),
-            'field' => ''
-        );
-        $confirmation['fields'][] = array(
-            'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_EXPIRES . '</span>'.zen_draw_pull_down_menu('', $expires_month, '', 'class="card_expiry_month card_hide"') . '&nbsp;' . zen_draw_pull_down_menu('', $expires_year, '', 'class="card-expiry-year  card_hide"'),
-            'field' => ''
-        );
-        $confirmation['fields'][] = array(
-            'title' => '<span class="card_hide" style="margin-right:10px">' . MODULE_PAYMENT_SECURESUBMIT_CREDIT_CARD_CVC . '</span>'.zen_draw_input_field('', '', 'size="5" maxlength="4" class="card_cvc card_hide"'),
-            'field' => ''
-        );
+        $confirmation['title'] .= 
+             '<!-- make iframes styled like other form -->
+                    <style type="text/css">
+                            #iframes iframe{
+                                    float:left;
+                                    width:100%;
+                            }
+                            .iframeholder:after,
+                            .iframeholder::after{
+                                    content:;
+                                    display:block;
+                                    width:100%;
+                                    height:0px;
+                                    clear:both;
+                                    position:relative;
+                            }
+                            #iframes label {
+                                    text-transform:uppercase !important;
+                                    font-weight:500;
+                                    font-family:sans-serif !important;
+                                    color:#777777;
+                            }
+                            .iframeholder {
+                              margin-bottom:50px;
+                            }
+                    </style>
 
+                    <!-- The Payment Form -->
+                    <form id="iframes" action="" method="GET" name="card_details">
+                        <div class="form-group">
+                                <label for="iframesCardNumber">Card Number:</label>
+                                <div class="iframeholder" id="iframesCardNumber"></div>
+                        </div>
+                        <div class="form-group">
+                                <label for="iframesCardExpiration">Card Expiration:</label>
+                                <div class="iframeholder" id="iframesCardExpiration"></div>
+                        </div>
+                        <div class="form-group">
+                                <label for="iframesCardCvv">Card CVV:</label>
+                                <div class="iframeholder" id="iframesCardCvv"></div>
+                        </div>                                        
+                    </form>';
+        
         $confirmation['title'] .= '<script type="text/javascript" src="includes/jquery.js"></script>';
+        $confirmation['title'] .= '<script type="text/javascript" src="https://api2.heartlandportico.com/SecureSubmit.v1/token/2.1/securesubmit.js"></script>';
+        $confirmation['title'] .= '<script type="text/javascript">var public_key = \'' . $public_key . '\'</script>';
         $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-1.0.2.js"></script>';
-        $confirmation['title'] .= '<script type="text/javascript">
-            jQuery(document).ready(function($) {
-                $("form[name=checkout_confirmation]").submit(function(event) {
-                    $("#btn_submit").hide();
 
-                    hps.tokenize({
-                        data: {
-                            public_key: \'' . $public_key . '\',
-                            number: $(\'.card_number\').val().replace(/\D/g, \'\'),
-                            cvc: $(\'.card_cvc\').val(),
-                            exp_month: $(\'.card_expiry_month\').val(),
-                            exp_year: $(\'.card-expiry-year\').val()
-                        },
-                        success: function(response) {
-                            secureSubmitResponseHandler(response);
-                        },
-                        error: function(response) {
-                            secureSubmitResponseHandler(response);
-                        }
-                    });
-
-                    return false; // stop the form submission
-                });
-
-                function secureSubmitResponseHandler(response) {
-                    if ( response.message ) {
-                        $("#btn_submit").show();
-                        alert(response.message);
-                    } else {
-                        var form$ = $("form[name=checkout_confirmation]");
-                        var token = response.token_value;
-
-                        form$.append("<input type=\'hidden\' name=\'securesubmit_token\' value=\'" + token + "\'/>");
-                        form$.attr(\'action\', \'index.php?main_page=checkout_process\');
-
-                        $(\'.card_number\').val(\'\');
-                        $(\'.card_cvc\').val(\'\');
-                        $(\'.card_expiry_month\').val(\'\');
-                        $(\'.card-expiry-year\').val(\'\');
-
-                        $("#tdb5").hide();
-                        form$.get(0).submit();
-                    }
-                }
-            });
-            </script>';
         return $confirmation;
     }
 
-    public function process_button()
-    {
+    public function process_button() {
         return false;
     }
 
-    public function before_process()
-    {
-        global $_POST,  $order, $sendto, $currency, $charge, $db, $messageStack;
+    public function before_process() {
+        global $_POST, $order, $sendto, $currency, $charge, $db, $messageStack; 
         require_once(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/securesubmit/Hps.php');
         $error = '';
-
+        
         $config = new HpsConfiguration();
         $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
         $config->versionNumber = '1512';
@@ -210,10 +188,11 @@ class securesubmit extends base
         $cardHolder->address = $hpsaddress;
 
         $hpstoken = new HpsTokenData();
-        $hpstoken->tokenValue = $_POST['securesubmit_token'];
+        $hpstoken->tokenValue = $_POST['securesubmit_token']; 
 
         $last_order = $db->Execute("select orders_id from " . TABLE_ORDERS . " order by orders_id desc limit 1");
         $this->invoice_number = ($last_order->fields['orders_id']) + 1;
+        
 
         $details = new HpsTransactionDetails();
         $details->invoiceNumber = $this->invoice_number;
@@ -221,21 +200,11 @@ class securesubmit extends base
         try {
             if (MODULE_PAYMENT_SECURESUBMIT_AUTHCAPTURE == 'Authorize') {
                 $response = $chargeService->authorize(
-                    round($order->info['total'], 2),
-                    MODULE_PAYMENT_SECURESUBMIT_CURRENCY,
-                    $hpstoken,
-                    $cardHolder,
-                    false,
-                    null
+                        round($order->info['total'], 2), MODULE_PAYMENT_SECURESUBMIT_CURRENCY, $hpstoken, $cardHolder, false, null
                 );
             } else {
                 $response = $chargeService->charge(
-                    round($order->info['total'], 2),
-                    MODULE_PAYMENT_SECURESUBMIT_CURRENCY,
-                    $hpstoken,
-                    $cardHolder,
-                    false,
-                    null
+                        round($order->info['total'], 2), MODULE_PAYMENT_SECURESUBMIT_CURRENCY, $hpstoken, $cardHolder, false, null
                 );
             }
 
@@ -251,9 +220,8 @@ class securesubmit extends base
         return false;
     }
 
-    public function after_process()
-    {
-        global $insert_id,  $db;
+    public function after_process() {
+        global $insert_id, $db;
 
         try {
             $comments .= " AUTH: " . $this->auth_code;
@@ -278,8 +246,7 @@ class securesubmit extends base
         return false;
     }
 
-    public function get_error()
-    {
+    public function get_error() {
         global $_GET;
         $error = array(
             'title' => MODULE_PAYMENT_SECURESUBMIT_ERROR_TITLE,
@@ -288,20 +255,18 @@ class securesubmit extends base
         return $error;
     }
 
-    public function check()
-    {
+    public function check() {
         global $db;
 
         if (!isset($this->_check)) {
-            $check_query  = $db->Execute("select configuration_value from " . TABLE_CONFIGURATION . " where configuration_key = 'MODULE_PAYMENT_SECURESUBMIT_STATUS'");
+            $check_query = $db->Execute("select configuration_value from " . TABLE_CONFIGURATION . " where configuration_key = 'MODULE_PAYMENT_SECURESUBMIT_STATUS'");
             $this->_check = $check_query->RecordCount();
         }
 
         return $this->_check;
     }
 
-    public function install()
-    {
+    public function install() {
         global $db, $messageStack;
 
         if (defined('MODULE_PAYMENT_SECURESUBMIT_STATUS')) {
@@ -320,14 +285,12 @@ class securesubmit extends base
         $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('Public key', 'MODULE_PAYMENT_SECURESUBMIT_PUBLIC_KEY', '', 'Public key  - available in your SecureSubmit Account Tab.', '6', '66', now())");
     }
 
-    public function remove()
-    {
+    public function remove() {
         global $db;
         $db->Execute("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
     }
 
-    public function keys()
-    {
+    public function keys() {
         return array(
             'MODULE_PAYMENT_SECURESUBMIT_STATUS',
             'MODULE_PAYMENT_SECURESUBMIT_ZONE',
@@ -341,8 +304,7 @@ class securesubmit extends base
     }
 
     // for now, we only accept usd, but let's leave our options option with some validations.
-    public function format_raw($number, $currency_code = '', $currency_value = '')
-    {
+    public function format_raw($number, $currency_code = '', $currency_value = '') {
         global $currencies, $currency;
 
         if (empty($currency_code) || !$this->is_set($currency_code)) {
@@ -355,10 +317,10 @@ class securesubmit extends base
 
         return number_format(zen_round($number * $currency_value, $currencies->currencies[$currency_code]['decimal_places']), $currencies->currencies[$currency_code]['decimal_places'], '.', '');
     }
+
 }
 
-function table_exists($tablename, $database = false)
-{
+function table_exists($tablename, $database = false) {
     global $db;
     $res = $db->Execute("
         SELECT COUNT(*) AS count
