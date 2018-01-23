@@ -22,7 +22,7 @@ jQuery(document).ready(function ($) {
 
 
     var hps = new Heartland.HPS({
-        publicKey: 'pkapi_cert_jKc1FtuyAydZhZfbB3',
+        publicKey: public_key,
         type: 'iframe',
         class: 'ss',
         // Configure the iframe fields to tell the library where
