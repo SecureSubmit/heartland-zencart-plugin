@@ -174,16 +174,9 @@ class securesubmit extends base {
 
     public function before_process() {
         global $_POST, $order, $sendto, $currency, $charge, $db, $messageStack; 
-        //require_once(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/securesubmit/Hps.php');
         require 'vendor/autoload.php';
         $error = '';
         
-        /*$config = new HpsConfiguration();
-        $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
-        $config->versionNumber = '1512';
-        $config->developerId = '002914';
-
-        $chargeService = new HpsCreditService($config);*/
         $chargeService = $this->getConfig();
 
         $hpsaddress = new Address();
