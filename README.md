@@ -5,6 +5,7 @@ This extension allows ZenCart to use the Heartland Payment Systems Gateway. All 
 ## Installation
 
 To install the development version, download and extract the files in this repo to the root of your ZenCart root folder. Activate and configure the plugin.
+Open the composer from the root directory and run the command "composer require globalpayments/php-sdk" 
 
 ## Contributing
 
