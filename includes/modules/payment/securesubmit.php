@@ -9,6 +9,7 @@ use GlobalPayments\Api\ServicesContainer;
 use GlobalPayments\Api\Entities\Address;
 use GlobalPayments\Api\Entities\Customer;
 use GlobalPayments\Api\Entities\TransactionSummary;
+
 class securesubmit extends base {
 
     public $code;
@@ -174,11 +175,10 @@ class securesubmit extends base {
 
     public function before_process() {
         global $_POST, $order, $sendto, $currency, $charge, $db, $messageStack; 
-        require 'vendor/autoload.php';
+        require_once(DIR_FS_CATALOG . DIR_WS_MODULES . 'payment/securesubmit/autoload.php');
         $error = '';
         
-        $chargeService = $this->getConfig();
-
+        $chargeservice = $this->setConfig();
         $hpsaddress = new Address();
         $hpsaddress->address = $order->billing['street_address'];
         $hpsaddress->city = $order->billing['city'];
@@ -186,14 +186,9 @@ class securesubmit extends base {
         $hpsaddress->zip = preg_replace('/[^0-9]/', '', $order->billing['postcode']);
         $hpsaddress->country = $order->billing['country']['title'];
 
-        $cardHolder = new Customer();
-        $cardHolder->firstName = $order->billing['firstname'];
-        $cardHolder->lastName = $order->billing['lastname'];
-        $cardHolder->emailAddress = $order->customer['email_address'];
-        $cardHolder->address = $hpsaddress;
-
         $hpstoken = new CreditCardData();
         $hpstoken->token = $_POST['securesubmit_token']; 
+        $hpstoken->cardHolderName = $order->billing['firstname'];
 
         $last_order = $db->Execute("select orders_id from " . TABLE_ORDERS . " order by orders_id desc limit 1");
         $this->invoice_number = ($last_order->fields['orders_id']) + 1;
@@ -202,17 +197,23 @@ class securesubmit extends base {
         $details->invoiceNumber = $this->invoice_number;
         try {
             if (MODULE_PAYMENT_SECURESUBMIT_AUTHCAPTURE == 'Authorize') {
-                $response = $hpstoken->authorize(
-                        round($order->info['total'], 2), MODULE_PAYMENT_SECURESUBMIT_CURRENCY, $hpstoken, $cardHolder, false, null
-                );
+                $response = $hpstoken->authorize(round($order->info['total'], 2))
+                ->withCurrency(MODULE_PAYMENT_SECURESUBMIT_CURRENCY)
+                ->withAddress($hpsaddress)
+                ->withInvoiceNumber($this->invoice_number)
+                ->withAmountEstimated(round($order->info['total'], 2))
+                ->withAllowDuplicates(true)
+                ->execute();
             } else {
-                $response = $hpstoken->charge(
-                        round($order->info['total'], 2), MODULE_PAYMENT_SECURESUBMIT_CURRENCY, $hpstoken, $cardHolder, false, null
-                );
+                $response = $hpstoken->charge(round($order->info['total'], 2))
+                ->withCurrency(MODULE_PAYMENT_SECURESUBMIT_CURRENCY)
+                ->withAddress($hpsaddress)
+                ->withAllowDuplicates(true)
+                ->execute();
             }
             $this->transaction_id = $response->transactionId;
             $this->auth_code = $response->authorizationCode;
-            $this->avs_code = $response->avsResultCode;
+            $this->avs_code = $response->avsResponseCode;
         } catch (Exception $e) {
             $error = $e->getMessage();
             $messageStack->add_session('checkout_confirmation', $error . '<!-- [' . $this->code . '] -->', 'error');
@@ -222,18 +223,18 @@ class securesubmit extends base {
         return false;
     }
     
-    protected function getConfig()
+    public function setConfig()
     {
         $config = new ServicesConfig();
-        $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_API_KEY;
-        $config->serviceUrl = ($this->enableCryptoUrl) ?
-                              'https://cert.api2-c.heartlandportico.com/':
-                              'https://cert.api2.heartlandportico.com';
-        $service = new CreditService(
-                $config
-        );
-        return $service;
+        $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
+        $env = $config->environment;
+        $config->serviceUrl = ($env != "TEST")?
+                'https://api2.heartlandportico.com': 
+                'https://cert.api2.heartlandportico.com'; 
+        $service =  ServicesContainer::configure($config);
+        return $service;    
     }
+	
     public function after_process() {
         global $insert_id, $db;
 
