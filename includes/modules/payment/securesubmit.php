@@ -228,9 +228,7 @@ class securesubmit extends base {
         $config = new ServicesConfig();
         $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
         $env = $config->environment;
-        $config->serviceUrl = ($env != "TEST")?
-                'https://api2.heartlandportico.com': 
-                'https://cert.api2.heartlandportico.com'; 
+        $config->serviceUrl = "https://cert.api2.heartlandportico.com"; 
         $service =  ServicesContainer::configure($config);
         return $service;    
     }
