@@ -227,7 +227,7 @@ class securesubmit extends base {
     {
         $config = new ServicesConfig();
         $config->secretApiKey = MODULE_PAYMENT_SECURESUBMIT_SECRET_KEY;
-        $config->serviceUrl = "https://cert.api2.heartlandportico.com"; 
+        $config->serviceUrl = strpos($config->secretApiKey, 'prod') ? 'https://api2.heartlandportico.com' : 'https://cert.api2.heartlandportico.com';
         $service =  ServicesContainer::configure($config);
         return $service;    
     }
