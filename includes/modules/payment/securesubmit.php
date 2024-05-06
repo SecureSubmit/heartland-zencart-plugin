@@ -164,7 +164,7 @@ class securesubmit extends base {
         $confirmation['title'] .= '<script type="text/javascript" src="includes/jquery.js"></script>';
         $confirmation['title'] .= '<script type="text/javascript" src="https://js.globalpay.com/v1/globalpayments.js"></script>';
         $confirmation['title'] .= '<script type="text/javascript">var public_key = \'' . $public_key . '\'</script>';
-        $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-1.0.2.js"></script>';
+        $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-2.0.0.js"></script>';
 
         return $confirmation;
     }
