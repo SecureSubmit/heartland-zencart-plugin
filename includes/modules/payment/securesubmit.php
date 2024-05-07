@@ -148,23 +148,23 @@ class securesubmit extends base {
                     <!-- The Payment Form -->
                     <form id="iframes" action="" method="GET" name="card_details">
                         <div class="form-group">
-                                <label for="iframesCardNumber">Card Number:</label>
-                                <div class="iframeholder" id="iframesCardNumber"></div>
+                            <label class="control-label ss-label" for="input-cc-number">Card Number:</label></br>
+                            <div id="iframesCardNumber" class="ss-frame-container"></div>
                         </div>
-                        <div class="form-group">
-                                <label for="iframesCardExpiration">Card Expiration:</label>
-                                <div class="iframeholder" id="iframesCardExpiration"></div>
+                        <div class="form-group gp-card-exp">
+                            <label class="control-label ss-label label-left" for="input-cc-expire-date">Card Expiration:</label></br>
+                            <div id="iframesCardExpiration" class="ss-frame-container"></div>
                         </div>
-                        <div class="form-group">
-                                <label for="iframesCardCvv">Card CVV:</label>
-                                <div class="iframeholder" id="iframesCardCvv"></div>
+                        <div class="form-group gp-card-cvv">
+                            <label class="control-label ss-label cvv-label label-left" for="input-cc-cvv2">Card CVV:</label></br>
+                            <div id="iframesCardCvv" class="ss-frame-container"></div>
                         </div>                                        
                     </form>';
         
         $confirmation['title'] .= '<script type="text/javascript" src="includes/jquery.js"></script>';
-        $confirmation['title'] .= '<script type="text/javascript" src="https://api2.heartlandportico.com/SecureSubmit.v1/token/2.1/securesubmit.js"></script>';
+        $confirmation['title'] .= '<script type="text/javascript" src="https://js.globalpay.com/v1/globalpayments.js"></script>';
         $confirmation['title'] .= '<script type="text/javascript">var public_key = \'' . $public_key . '\'</script>';
-        $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-1.0.2.js"></script>';
+        $confirmation['title'] .= '<script type="text/javascript" src="includes/secure.submit-2.0.0.js"></script>';
 
         return $confirmation;
     }
